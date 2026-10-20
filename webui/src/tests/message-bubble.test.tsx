@@ -783,7 +783,7 @@ describe("MessageBubble", () => {
   ].map(([name, displayName, expected]) => ({ kind, name, displayName, expected }))))(
     "uses the saved display name for $kind $name without rewriting its identifier",
     ({ kind, name, displayName, expected }) => {
-      const message: UIMessage = {
+      const message: UIMessage = { createdAt: 1,
         id: "saved-app-name",
         role: "user",
         content: `Use @${name} please`,
@@ -807,13 +807,13 @@ describe("MessageBubble", () => {
   it("copies the original mention identifiers rather than display names", async () => {
     const copy = vi.spyOn(clipboard, "copyTextToClipboard").mockResolvedValue(true);
     try {
-      render(<ThreadMessages messages={[{
+      render(<ThreadMessages messages={[{ createdAt: 1,
         id: "copy-display-name", role: "user", content: "Please use @drawio",
         cliApps: [{ name: "drawio", display_name: "Draw.io", category: "diagram", entry_point: "drawio" }],
       }]} />);
       expect(screen.getByTestId("message-cli-mention-drawio")).toHaveTextContent("@Draw.io");
       fireEvent.click(screen.getByRole("button", { name: "Message actions" }));
-      fireEvent.click(screen.getByRole("button", { name: "Copy", exact: true }));
+      fireEvent.click(screen.getByRole("button", { name: "Copy" }));
       await waitFor(() => expect(copy).toHaveBeenCalledWith("Please use @drawio"));
     } finally {
       copy.mockRestore();
@@ -1065,6 +1065,27 @@ describe("MessageBubble", () => {
     expect(container.querySelector("video[controls]")).toBeInTheDocument();
     expect(screen.queryByText("Preview")).not.toBeInTheDocument();
     expect(screen.queryByText("Code")).not.toBeInTheDocument();
+  });
+
+  it("preserves an uploaded video player through canonical history hydration", () => {
+    const preview = "data:video/webm;base64,AAAA";
+    const message: UIMessage = {
+      id: "optimistic-user", role: "user", content: "Watch this", createdAt: 1,
+      turnId: "video-turn", turnPhase: "user",
+      media: [{ kind: "video", name: "clip.webm", url: preview }],
+    };
+    const canonical: UIMessage = {
+      ...message, id: "history-user",
+      media: [{ kind: "video", name: "clip.webm", url: "/api/media/sig/clip" }],
+    };
+    const { rerender, unmount } = render(<ThreadMessages messages={[message]} />);
+    const video = screen.getByLabelText(/video attachment/i);
+    rerender(<ThreadMessages messages={[canonical]} />);
+    expect(screen.getByLabelText(/video attachment/i)).toBe(video);
+    expect(video).toHaveAttribute("src", preview);
+    unmount();
+    render(<ThreadMessages messages={[canonical]} />);
+    expect(screen.getByLabelText(/video attachment/i)).toHaveAttribute("src", "/api/media/sig/clip");
   });
 
   it("renders streaming reasoning as one compact activity line", () => {
