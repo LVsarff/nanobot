@@ -98,18 +98,18 @@ describe("Automation run time picker", () => {
     const time = screen.getByRole("textbox", { name: "Run time" });
     await user.clear(time);
     await user.type(time, "09:45");
-    await user.click(screen.getByRole("button", { name: "Save", exact: true }));
+    await user.click(screen.getByRole("button", { name: "Save" }));
     expect(save).toHaveBeenCalledWith(job, {
       name: job.name, message: job.payload.message,
       schedule: { kind: "at", at_ms: new Date(2099, 8, 17, 9, 45).getTime() },
     });
     fireEvent.change(screen.getByRole("textbox", { name: "Run date" }), { target: { value: "2099-02-31" } });
-    expect(screen.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
     expect(screen.getByText("Choose a run time.")).toBeVisible();
   });
 
   it("localizes the calendar and its field labels in Chinese", async () => {
-    await act(() => i18n.changeLanguage("zh-CN"));
+    await act(async () => { await i18n.changeLanguage("zh-CN"); });
     const user = userEvent.setup();
     render(<Harness />);
     expect(screen.getByRole("textbox", { name: "运行日期" })).toBeVisible();

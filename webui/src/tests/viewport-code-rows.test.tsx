@@ -13,8 +13,15 @@ const disconnect = vi.fn();
 const observe = vi.fn();
 function showChunks(indices: number[]) {
   const entries = [...document.querySelectorAll<HTMLElement>("[data-code-chunk]")]
-    .map(target => ({ target, isIntersecting: indices.includes(Number(target.dataset.codeChunk)) }));
-  act(() => notify(entries as IntersectionObserverEntry[], {} as IntersectionObserver));
+    .map(target => ({
+      target, isIntersecting: indices.includes(Number(target.dataset.codeChunk)),
+      boundingClientRect: target.getBoundingClientRect(),
+      intersectionRect: target.getBoundingClientRect(), rootBounds: null,
+      intersectionRatio: indices.includes(Number(target.dataset.codeChunk)) ? 1 : 0,
+      time: performance.now(),
+    }));
+  act(() => notify(entries, { disconnect, observe, unobserve: vi.fn(), takeRecords: () => [],
+    root: null, rootMargin: "0px", thresholds: [0] }));
 }
 function sourceText() {
   return [...document.querySelectorAll("[data-highlighted]")].map(node => node.textContent).join("");

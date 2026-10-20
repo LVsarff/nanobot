@@ -418,7 +418,7 @@ describe("useNanobotStream", () => {
       requestFrame.mockRestore();
       now.mockRestore();
       if (descriptor) Object.defineProperty(document, "visibilityState", descriptor);
-      else delete (document as Document & { visibilityState?: string }).visibilityState;
+      else Reflect.deleteProperty(document, "visibilityState");
       vi.useRealTimers();
     }
   });
@@ -466,7 +466,7 @@ describe("useNanobotStream", () => {
       if (visibilityDescriptor) {
         Object.defineProperty(document, "visibilityState", visibilityDescriptor);
       } else {
-        delete (document as Document & { visibilityState?: DocumentVisibilityState }).visibilityState;
+        Reflect.deleteProperty(document, "visibilityState");
       }
       vi.useRealTimers();
     }
@@ -2340,10 +2340,11 @@ describe("useNanobotStream", () => {
       { wrapper: wrap(fake.client) },
     );
 
-    let submitted: ReturnType<typeof result.current.send> = null;
+    const submission: { value?: ReturnType<typeof result.current.send> } = {};
     act(() => {
-      submitted = result.current.send("bind the camera");
+      submission.value = result.current.send("bind the camera");
     });
+    const submitted = submission.value;
 
     expect(submitted).not.toBeNull();
     expect(submitted?.sideChannel).toBe(false);

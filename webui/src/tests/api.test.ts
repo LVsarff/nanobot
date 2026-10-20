@@ -313,10 +313,10 @@ describe("webui API helpers", () => {
   });
 
   it("aborts a WebUI thread request when its caller signal is aborted", async () => {
-    let requestSignal: AbortSignal | null = null;
+    const captured: { signal?: AbortSignal | null } = {};
     vi.mocked(fetch).mockImplementation((_input, init) => new Promise((_resolve, reject) => {
-      requestSignal = init?.signal ?? null;
-      requestSignal?.addEventListener("abort", () => {
+      captured.signal = init?.signal;
+      captured.signal?.addEventListener("abort", () => {
         reject(new DOMException("Aborted", "AbortError"));
       });
     }));
@@ -328,7 +328,7 @@ describe("webui API helpers", () => {
     controller.abort();
 
     await expect(request).rejects.toMatchObject({ name: "AbortError" });
-    expect(requestSignal?.aborted).toBe(true);
+    expect(captured.signal?.aborted).toBe(true);
   });
 
   it("percent-encodes websocket keys and paths when fetching file previews", async () => {

@@ -24,7 +24,7 @@ const feature: NanobotFeatureInfo = {
 beforeEach(() => {
   requestMutation.mockReset();
   useClientMock.mockReset().mockReturnValue({ client: { requestMutation } });
-  vi.spyOn(QRCode, "toDataURL").mockResolvedValue("data:image/png;base64,preview");
+  vi.spyOn(QRCode, "toDataURL").mockImplementation(async () => "data:image/png;base64,preview");
 });
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
 
@@ -38,13 +38,14 @@ describe("WeChat verification views", () => {
     const view = render(<WeixinConnectFlowView {...props} />);
     const code = screen.getByRole("textbox", { name: "Code" });
     fireEvent.change(code, { target: { value: " 987654 " } });
-    fireEvent.click(screen.getByRole("button", { name: "Verify", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "Verify" }));
     await waitFor(() => expect(onPoll).toHaveBeenCalledWith({ verify_code: "987654" }));
-    view.rerender(<WeixinConnectFlowView {...props} connect={{ ...challenge, verification_failed: true }} busy />);
+    const rejected = { ...challenge, verification_failed: true };
+    view.rerender(<WeixinConnectFlowView {...props} connect={rejected} busy />);
     expect(code).toHaveValue(" 987654 ");
     expect(code).toHaveAttribute("aria-invalid", "true");
     expect(code).toHaveAttribute("aria-describedby", screen.getByRole("alert").id);
-    expect(screen.getByRole("button", { name: "Verify", exact: true })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Verify" })).toBeDisabled();
     expect(useClientMock).not.toHaveBeenCalled();
     expect(requestMutation).not.toHaveBeenCalled();
   });
@@ -61,7 +62,7 @@ describe("WeChat verification views", () => {
 
     requestMutation.mockResolvedValueOnce({ ...challenge, verification_failed: true });
     fireEvent.change(code, { target: { value: "123456" } });
-    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Verify", exact: true })); });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Verify" })); });
     expect(requestMutation).toHaveBeenLastCalledWith("settings.channel.connect.poll", {
       channel: "weixin", session_id: "weixin-verification", verify_code: "123456",
     }, 150_000);
@@ -70,7 +71,7 @@ describe("WeChat verification views", () => {
 
     const features = { features: [{ ...feature, configured: true }], enabled_count: 0 };
     requestMutation.mockResolvedValueOnce({ ...challenge, status: "succeeded", nanobot_features: features });
-    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Verify", exact: true })); });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Verify" })); });
     expect(onFeaturesUpdate).toHaveBeenCalledWith(features);
     expect(screen.getByText("WeChat is connected.")).toBeVisible();
     expect(screen.queryByRole("textbox", { name: "Code" })).not.toBeInTheDocument();

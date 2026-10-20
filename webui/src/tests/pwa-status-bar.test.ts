@@ -38,8 +38,8 @@ describe("iOS standalone status-bar surface", () => {
     const enabled = rules.filter((rule) => declarations(rule).display === "block");
     expect(enabled).toHaveLength(1);
     const conditions: Record<string, string> = {};
-    for (let parent = enabled[0].parent; parent; parent = parent.parent) {
-      if (parent.type === "atrule" && "name" in parent) conditions[parent.name] = parent.params;
+    for (let parent: postcss.Container | postcss.Document | undefined = enabled[0].parent; parent; parent = parent.parent) {
+      if (parent instanceof postcss.AtRule) conditions[parent.name] = parent.params;
     }
     expect(conditions.media).toBe("(display-mode: standalone)");
     expect(conditions.supports).toBe("(-webkit-touch-callout: none) and (background-clip: text)");

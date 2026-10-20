@@ -128,18 +128,7 @@ export function settingsPayload(): SettingsPayload {
 export function renderSettingsView(
   options: {
     client?: NanobotClient;
-    initialSection?:
-      | "overview"
-      | "appearance"
-      | "apps"
-      | "skills"
-      | "channels"
-      | "automations"
-      | "advanced"
-      | "models"
-      | "image"
-      | "browser"
-      | "runtime";
+    initialSection?: React.ComponentProps<typeof SettingsView>["initialSection"];
     initialSettings?: SettingsPayload | null;
     skills?: React.ComponentProps<typeof SettingsView>["skills"];
     skillsLoading?: boolean;

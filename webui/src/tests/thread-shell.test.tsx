@@ -304,11 +304,10 @@ function httpJson(body: unknown) {
     && "messages" in body
       ? canonicalThreadPayload(body as never)
       : body;
-  return {
-    ok: true,
+  return new Response(JSON.stringify(normalized), {
     status: 200,
-    json: async () => normalized,
-  };
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 function traceDetailThread(
@@ -361,9 +360,7 @@ function restoreDocumentVisibility(
   if (descriptor) {
     Object.defineProperty(document, "visibilityState", descriptor);
   } else {
-    delete (document as Document & {
-      visibilityState?: DocumentVisibilityState;
-    }).visibilityState;
+    Reflect.deleteProperty(document, "visibilityState");
   }
 }
 

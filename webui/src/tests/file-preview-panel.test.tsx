@@ -82,7 +82,7 @@ describe("FilePreviewPanel", () => {
     vi.mocked(fetchFilePreview).mockImplementation(async (_token, _session, path) => {
       const details = path.endsWith("details.md");
       const name = details ? "details.md" : "REPORT.md";
-      return { path: `/workspace/reports/${name}`, display_path: `reports/${name}`,
+      return { project_path: "/workspace", size: 42, path: `/workspace/reports/${name}`, display_path: `reports/${name}`,
         language: "markdown", content: details ? "# Details\n\n[Return](./REPORT.md)\n" : report, truncated: false };
     });
     const store = new FilePreviewStore();
@@ -116,7 +116,7 @@ describe("FilePreviewPanel", () => {
   });
 
   it("opens the sidebar image in the shared zoomable viewer and returns to the preview", async () => {
-    vi.mocked(fetchFilePreview).mockResolvedValue({
+    vi.mocked(fetchFilePreview).mockResolvedValue({ project_path: "/workspace",
       kind: "image", path: "/workspace/chart.png", display_path: "chart.png",
       size: 42, mime_type: "image/png", data_url: "data:image/png;base64,example",
     });
@@ -136,7 +136,7 @@ describe("FilePreviewPanel", () => {
   });
 
   it("renders file content without a second filename or breadcrumb below the tabs", async () => {
-    vi.mocked(fetchFilePreview).mockResolvedValue({
+    vi.mocked(fetchFilePreview).mockResolvedValue({ project_path: "/workspace", size: 42,
       path: "/Users/hr/workspace/quicksort.py",
       display_path: "quicksort.py",
       language: "python",
@@ -162,7 +162,7 @@ describe("FilePreviewPanel", () => {
   });
 
   it("paints cached content immediately, revalidates it, and does not restart when the cache ages", async () => {
-    const cached = { path: "notes.txt", display_path: "notes.txt", language: "text", content: "Cached", truncated: false };
+    const cached = { project_path: "/workspace", size: 42, path: "notes.txt", display_path: "notes.txt", language: "text", content: "Cached", truncated: false };
     let resolve!: (payload: typeof cached) => void;
     const loadPreview = vi.fn(() => new Promise<typeof cached>(r => { resolve = r; }));
     const view = (initialPreview?: typeof cached) => <FilePreviewPanel sessionKey="a" path="notes.txt"
@@ -178,7 +178,7 @@ describe("FilePreviewPanel", () => {
   });
 
   it("reports a failed revalidation rather than leaving stale cached content looking current", async () => {
-    const cached = { path: "notes.txt", display_path: "notes.txt", language: "text", content: "Cached", truncated: false };
+    const cached = { project_path: "/workspace", size: 42, path: "notes.txt", display_path: "notes.txt", language: "text", content: "Cached", truncated: false };
     render(<FilePreviewPanel sessionKey="a" path="notes.txt" token="test" initialPreview={cached}
       loadPreview={vi.fn().mockRejectedValue(new Error("Forbidden"))} />);
     await screen.findByText("Could not preview this file.");
@@ -186,7 +186,7 @@ describe("FilePreviewPanel", () => {
   });
 
   it("does not repaint a cache hit twice after its initial synchronous paint", async () => {
-    const cached = { path: "notes.txt", display_path: "notes.txt", language: "text", content: "Cached", truncated: false };
+    const cached = { project_path: "/workspace", size: 42, path: "notes.txt", display_path: "notes.txt", language: "text", content: "Cached", truncated: false };
     const loadPreview = vi.fn().mockResolvedValue(cached);
     render(<FilePreviewPanel sessionKey="a" path="notes.txt" token="test"
       initialPreview={cached} loadPreview={loadPreview} />);
@@ -196,7 +196,7 @@ describe("FilePreviewPanel", () => {
   });
 
   it("updates translated chrome without refetching the open file", async () => {
-    vi.mocked(fetchFilePreview).mockResolvedValue({
+    vi.mocked(fetchFilePreview).mockResolvedValue({ project_path: "/workspace", size: 42,
       path: "/workspace/notes.md",
       display_path: "notes.md",
       language: "markdown",
@@ -226,7 +226,7 @@ describe("FilePreviewPanel", () => {
 
   it("defaults old Markdown payloads to preview and switches to exact source without another read", async () => {
     const content = "# Report\n\n**Done**\n\n| Item | Status |\n| --- | --- |\n| Copy | OK |\n";
-    vi.mocked(fetchFilePreview).mockResolvedValue({ path: "/workspace/REPORT.md", display_path: "REPORT.md",
+    vi.mocked(fetchFilePreview).mockResolvedValue({ project_path: "/workspace", size: 42, path: "/workspace/REPORT.md", display_path: "REPORT.md",
       language: "markdown", content, truncated: true });
     render(<FilePreviewPanel sessionKey="a" path="REPORT.md" token="test" />);
     await screen.findByRole("heading", { name: "Report" });
@@ -249,7 +249,7 @@ describe("FilePreviewPanel", () => {
   });
 
   it("resets the display for another file or session but keeps source on credential renewal", async () => {
-    const payload = { path: "/workspace/notes.md", display_path: "notes.md", language: "markdown",
+    const payload = { project_path: "/workspace", size: 42, path: "/workspace/notes.md", display_path: "notes.md", language: "markdown",
       content: "# Notes", truncated: false };
     vi.mocked(fetchFilePreview).mockResolvedValue(payload);
     const view = (path: string, sessionKey = "a", token = "old") =>
@@ -270,7 +270,7 @@ describe("FilePreviewPanel", () => {
 
   it("keeps document resources inert and opens relative links through the session preview callback", async () => {
     const open = vi.fn();
-    vi.mocked(fetchFilePreview).mockResolvedValue({ path: "/workspace/reports/REPORT.mdx", display_path: "reports/REPORT.mdx",
+    vi.mocked(fetchFilePreview).mockResolvedValue({ project_path: "/workspace", size: 42, path: "/workspace/reports/REPORT.mdx", display_path: "reports/REPORT.mdx",
       language: "markdown", truncated: false, content: [
         "# Report", "[Local](../notes%20one.md)", "![Chart](https://example.com/chart.png)",
         "- Reference — [Website](https://example.com)", "[Section](#details)", "[Chat](#/chat/websocket:other)",
@@ -292,7 +292,7 @@ describe("FilePreviewPanel", () => {
   });
 
   it("preserves the open image and zoom on token renewal, using the current token for the next file", async () => {
-    vi.mocked(fetchFilePreview).mockResolvedValue({
+    vi.mocked(fetchFilePreview).mockResolvedValue({ project_path: "/workspace",
       kind: "image", path: "/workspace/chart.png", display_path: "chart.png",
       size: 42, mime_type: "image/png", data_url: "data:image/png;base64,example",
     });

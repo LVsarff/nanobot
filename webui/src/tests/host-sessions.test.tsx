@@ -11,7 +11,7 @@ vi.mock("@/lib/remote-instances", async (original) => ({
 }));
 const ids = Array.from({ length: 4 }, (_, i) => `3b968d52-081d-4898-9970-ff0a1fc9381${i}`);
 const connections: RemoteConnection[] = ids.map((id, i) => ({ id, name: `Server ${i}`, hostname: `host-${i}`,
-  gateway_id: `gateway-${i}`, url: `http://127.0.0.1:${24000 + i}/#/?bootstrapSecret=secret` }));
+  host: `host-${i}`, config_path: `/srv/bot-${i}/config.json`, gateway_id: `gateway-${i}`, url: `http://127.0.0.1:${24000 + i}/#/?bootstrapSecret=secret` }));
 const directory = { available: true, profiles: connections.map((item) => ({ ...item, connected: true })) };
 const deferred = <T,>() => {
   let resolve!: (value: T) => void;

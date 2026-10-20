@@ -52,10 +52,10 @@ describe("sidebar touch hover isolation", () => {
     result.root.walkRules((rule) => {
       if (rule.selector.includes(":hover")) {
         hoverSelectors.push(rule.selector);
-        let parent = rule.parent;
+        let parent: postcss.Container | postcss.Document | undefined = rule.parent;
         let hoverMedia = false;
         while (parent) {
-          if (parent.type === "atrule" && "name" in parent
+          if (parent instanceof postcss.AtRule
             && parent.name === "media" && parent.params === "(hover: hover)") {
             hoverMedia = true;
           }

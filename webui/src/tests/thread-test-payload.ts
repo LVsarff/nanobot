@@ -115,11 +115,15 @@ function messageEvents(message: UIMessage): ThreadProjectionEvent[] {
       ...eventBase(message, ":reasoning-end"),
     });
   }
+  const media = message.media?.map(({ url, ...attachment }) => {
+    if (!url) throw new Error("Assistant media fixtures require a signed URL");
+    return { ...attachment, url };
+  });
   events.push({
     event: "message",
     ...base,
     text: message.content,
-    ...(message.media?.length ? { media_urls: message.media } : {}),
+    ...(media?.length ? { media_urls: media } : {}),
     ...(message.latencyMs !== undefined ? { latency_ms: message.latencyMs } : {}),
   });
   const completion = completionEvent(message);

@@ -25,7 +25,7 @@ class TestSocket {
 const CHAT_ID = "replay-ownership";
 const TURN_ID = "running-turn";
 const INITIAL_MESSAGES: UIMessage[] = [
-  { id: "prompt", role: "user", content: "Read the fixtures", turnId: TURN_ID },
+  { id: "prompt", role: "user", content: "Read the fixtures", turnId: TURN_ID, createdAt: 1 },
 ];
 
 function toolMessage(callId: string): InboundEvent {
@@ -46,7 +46,7 @@ function Thread({ children }: { children?: ReactNode }) {
 
 function displayedCalls(): string[] {
   const messages: UIMessage[] = JSON.parse(screen.getByTestId("messages").textContent!);
-  return messages.flatMap((message) => message.toolEvents?.map((event) => event.call_id) ?? []);
+  return messages.flatMap((message) => message.toolEvents?.flatMap((event) => event.call_id ? [event.call_id] : []) ?? []);
 }
 
 afterEach(() => { vi.unstubAllGlobals(); });

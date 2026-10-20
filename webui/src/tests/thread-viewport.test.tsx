@@ -1182,7 +1182,8 @@ describe("ThreadViewport", () => {
 
       act(() => {
         composerObserver!.callback(
-          [{ target: composerDock }] as ResizeObserverEntry[],
+          [{ target: composerDock, contentRect: composerDock.getBoundingClientRect(),
+            borderBoxSize: [], contentBoxSize: [], devicePixelContentBoxSize: [] }],
           composerObserver as unknown as ResizeObserver,
         );
       });
@@ -1204,7 +1205,8 @@ describe("ThreadViewport", () => {
       });
       act(() => {
         composerObserver!.callback(
-          [{ target: composerDock }] as ResizeObserverEntry[],
+          [{ target: composerDock, contentRect: composerDock.getBoundingClientRect(),
+            borderBoxSize: [], contentBoxSize: [], devicePixelContentBoxSize: [] }],
           composerObserver as unknown as ResizeObserver,
         );
       });
@@ -1625,7 +1627,7 @@ describe("ThreadViewport", () => {
 
       const firstVisible = 300 - INITIAL_HISTORY_WINDOW;
       const anchor = screen.getByText(`message ${firstVisible}`)
-        .closest<HTMLElement>("[data-thread-display-unit]");
+        .closest<HTMLElement>("[data-thread-display-unit]")!;
       expect(anchor).not.toBeNull();
       hitTarget = anchor;
       let anchorDocumentTop = 200;
