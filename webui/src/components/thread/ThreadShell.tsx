@@ -1858,7 +1858,7 @@ export function ThreadShell({
   );
 
   const composer = (
-    <>
+    <div className={composerVariant === "hero" ? "thread-composer-stack is-hero" : "thread-composer-stack"}>
       {modelFallback?.chatId === chatId && !modelFallback.dismissed ? (
         <ModelFallbackNotice
           model={modelFallback.model}
@@ -1875,12 +1875,14 @@ export function ThreadShell({
           state={recoveryState}
           onContinue={continueRecovery}
           onDismiss={dismissRecovery}
+          onOpenSettings={onOpenModelSettings}
         />
       ) : null}
       {streamError && !hasInlineDeliveryError(messages, streamError) ? (
         <StreamErrorNotice
           error={streamError}
           onDismiss={dismissStreamError}
+          onOpenSettings={onOpenModelSettings}
         />
       ) : null}
       {session ? (
@@ -1997,7 +1999,7 @@ export function ThreadShell({
           onQuotedContextChange={setQuotedContext}
         />
       )}
-    </>
+    </div>
   );
 
   const emptyState = loading ? (

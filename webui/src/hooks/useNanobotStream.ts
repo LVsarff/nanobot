@@ -818,8 +818,14 @@ export function useNanobotStream(
           ...(typeof ev.can_continue === "boolean"
             ? { can_continue: ev.can_continue }
             : {}),
+          ...(typeof ev.failure_error_kind === "string"
+            ? { failure_error_kind: ev.failure_error_kind }
+            : {}),
         };
         setRecoveryState(next);
+        if (ev.reason === "model_request_failed" || ev.status === "resuming") {
+          setStreamError(null);
+        }
         if (ev.status === "resuming") {
           setRunStartedAt((current) => current ?? Date.now() / 1000);
           setIsStreaming(true);
